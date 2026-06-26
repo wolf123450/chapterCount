@@ -114,3 +114,69 @@ def corrupted_epub(tmp_path):
     p = tmp_path / 'bad.epub'
     p.write_bytes(b'not a zip file at all')
     return str(p)
+
+
+def _make_mobi(nav_points=0, nav_li=0):
+    """
+    Build minimal MOBI bytes containing an NCX fragment in plain text.
+    Real MOBI files compress content, but this fixture embeds the NCX
+    uncompressed so the byte-scan detector can find it.
+    """
+    ncx_fragment = b''
+    if nav_points > 0:
+        ncx_fragment = (b'<navPoint id="p1">' * nav_points)
+    elif nav_li > 0:
+        ncx_fragment = (
+            b'<nav epub:type="toc"><ol>'
+            + b'<li><a>Chapter</a></li>' * nav_li
+            + b'</ol></nav>'
+        )
+
+    # Minimal PalmDOC database header (78 bytes) + 1 record pointing to offset 78
+    # Record 0 at offset 78 contains our NCX fragment directly (no real MOBI header)
+    # This is not a valid MOBI but is sufficient for the byte-scan detector tests.
+    record_offset = 78 + 8   # header (78) + one record descriptor (8)
+    header = (
+        b'Test Book\x00' + b'\x00' * 22          # name (32 bytes)
+        + b'\x00\x00'                             # attributes
+        + b'\x00\x00'                             # version
+        + b'\x00' * 8                             # dates
+        + b'\x00' * 8                             # app/sort info
+        + b'BOOK'                                 # type
+        + b'MOBI'                                 # creator
+        + b'\x00' * 4                             # unique ID seed
+        + b'\x00' * 4                             # next record list ID
+        + b'\x00\x01'                             # num records = 1
+        # Record 0 descriptor: 4-byte offset + 4-byte attribs
+        + record_offset.to_bytes(4, 'big')
+        + b'\x00\x00\x00\x00'
+    )
+    return header + ncx_fragment
+
+
+@pytest.fixture
+def mobi_with_nav_points(tmp_path):
+    p = tmp_path / 'book.mobi'
+    p.write_bytes(_make_mobi(nav_points=7))
+    return str(p)
+
+
+@pytest.fixture
+def mobi_with_nav_li(tmp_path):
+    p = tmp_path / 'book.mobi'
+    p.write_bytes(_make_mobi(nav_li=4))
+    return str(p)
+
+
+@pytest.fixture
+def mobi_no_toc(tmp_path):
+    p = tmp_path / 'book.mobi'
+    p.write_bytes(_make_mobi())
+    return str(p)
+
+
+@pytest.fixture
+def corrupted_mobi(tmp_path):
+    p = tmp_path / 'bad.mobi'
+    p.write_bytes(b'\x00\x01\x02\x03')
+    return str(p)
