@@ -85,7 +85,6 @@ class ChapterCountAction(InterfaceAction):
             try:
                 self._scan_one_silent(db, book_id, prefs)
             except Exception as exc:
-                import traceback
                 from calibre.utils.logging import default_log
                 default_log.error(f'Chapter Count auto-scan failed for book {book_id}: {exc}')
                 if prefs.get('notify_on_error', DEFAULTS['notify_on_error']):
