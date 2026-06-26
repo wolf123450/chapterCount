@@ -1,5 +1,4 @@
 import re
-from typing import Optional
 
 from .base import BaseDetector, DetectionResult, UNDETECTED
 from . import _calibre_pdf_adapter as _adapter

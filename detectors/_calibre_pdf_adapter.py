@@ -10,7 +10,7 @@ depends only on the two public functions below.
 def get_pdf_bookmarks(pdf_path: str) -> list:
     """Return a flat list of top-level PDF bookmark titles, or [] if none."""
     try:
-        from calibre.utils.podofo import get_podofo, podofo_err
+        from calibre.utils.podofo import get_podofo
         podofo = get_podofo()
         if podofo is None:
             return []

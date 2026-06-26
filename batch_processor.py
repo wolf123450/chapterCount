@@ -8,9 +8,11 @@ try:
 except ImportError:
     from PyQt6.Qt import QThread, pyqtSignal  # Calibre 7+
 
+import os
+import time
+
 from detectors.factory import get_result_for_book
 from column_manager import should_write, write_result
-import time
 
 
 class BatchProcessor(QThread):
@@ -74,7 +76,7 @@ class BatchProcessor(QThread):
 
         preferred = preferred_format(fmts)
         book_path = self._db.format_abspath(book_id, preferred, index_is_id=True)
-        data_dir  = self._db.field_for('path', book_id)
+        data_dir  = os.path.join(self._db.library_path, self._db.field_for('path', book_id) or '')
 
         per_book = self._per_book_loader(data_dir) if data_dir else {}
         merged   = merge_config(per_book, dict(self._prefs))

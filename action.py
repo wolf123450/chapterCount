@@ -1,9 +1,4 @@
-from functools import partial
-
-try:
-    from PyQt5.Qt import QApplication
-except ImportError:
-    from PyQt6.Qt import QApplication
+import os
 
 from calibre.gui2.actions import InterfaceAction
 from calibre.gui2 import error_dialog, info_dialog
@@ -35,8 +30,6 @@ class ChapterCountAction(InterfaceAction):
         )
 
     def _make_menu(self):
-        from calibre.gui2.actions import create_menu_action
-        import calibre.gui2 as gui2
         try:
             from PyQt5.Qt import QMenu
         except ImportError:
@@ -97,7 +90,7 @@ class ChapterCountAction(InterfaceAction):
         from batch_processor import preferred_format
         preferred = preferred_format(list(fmts))
         book_path = db.format_abspath(book_id, preferred, index_is_id=True)
-        data_dir  = db.field_for('path', book_id)
+        data_dir  = os.path.join(db.library_path, db.field_for('path', book_id) or '')
         per_book  = load_per_book_config(data_dir) if data_dir else {}
         merged    = merge_config(per_book, prefs)
         result    = get_result_for_book(book_path, preferred.lower(), merged)
@@ -123,7 +116,7 @@ class ChapterCountAction(InterfaceAction):
         fmts    = db.formats(book_id, index_is_id=True) or []
         from batch_processor import preferred_format
         fmt      = preferred_format(list(fmts)) if fmts else ''
-        data_dir = db.field_for('path', book_id) or ''
+        data_dir = os.path.join(db.library_path, db.field_for('path', book_id) or '')
         prefs    = dict(PREFS)
         count_label  = prefs.get('count_column',  '#chapter_count').lstrip('#')
         method_label = prefs.get('method_column', '#chapter_detection_method').lstrip('#')

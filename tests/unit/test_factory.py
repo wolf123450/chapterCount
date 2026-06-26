@@ -5,18 +5,6 @@ from detectors.factory import get_result_for_book
 from detectors.base import DetectionResult
 
 
-def _mock_db(book_id, fmt='epub', path='/books/book.epub', data_dir='/books/data'):
-    db = MagicMock()
-    db.formats.return_value = [fmt.upper()]
-    db.format_abspath.return_value = path
-    db.field_for.return_value = None           # no existing column value
-    book_data = MagicMock()
-    book_data.__str__ = lambda self: data_dir
-    db.field_for.return_value = None
-    db.new_api.format_abspath.return_value = path
-    db.new_api.field_for.return_value = None
-    return db
-
 
 def test_manual_count_returns_immediately(tmp_path):
     p = tmp_path / 'book.epub'
