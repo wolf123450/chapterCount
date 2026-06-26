@@ -1,7 +1,7 @@
+# Calibre stubs set up in root conftest, but also set here for safety
 import sys
 import types
 
-# Stub out calibre module before importing any test files
 if 'calibre' not in sys.modules:
     calibre = types.ModuleType('calibre')
     calibre_customize = types.ModuleType('calibre.customize')
@@ -21,3 +21,5 @@ if 'calibre' not in sys.modules:
     sys.modules['calibre.customize'] = calibre_customize
     sys.modules['calibre.utils'] = calibre_utils
     sys.modules['calibre.utils.config'] = calibre_config
+
+# EPUB fixtures added in Task 4

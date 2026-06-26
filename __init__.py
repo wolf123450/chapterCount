@@ -1,9 +1,4 @@
-try:
-    from calibre.customize import InterfaceActionBase
-except ImportError:
-    # For unit testing without calibre installed
-    class InterfaceActionBase:
-        pass
+from calibre.customize import InterfaceActionBase
 
 
 class ChapterCountPlugin(InterfaceActionBase):
