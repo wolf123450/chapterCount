@@ -180,3 +180,29 @@ def corrupted_mobi(tmp_path):
     p = tmp_path / 'bad.mobi'
     p.write_bytes(b'\x00\x01\x02\x03')
     return str(p)
+
+
+def _make_minimal_pdf():
+    """Minimal valid PDF with no bookmarks."""
+    return (
+        b'%PDF-1.4\n'
+        b'1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n'
+        b'2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n'
+        b'3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]>>endobj\n'
+        b'xref\n0 4\n0000000000 65535 f \n'
+        b'trailer<</Size 4/Root 1 0 R>>\n%%EOF\n'
+    )
+
+
+@pytest.fixture
+def pdf_file(tmp_path):
+    p = tmp_path / 'book.pdf'
+    p.write_bytes(_make_minimal_pdf())
+    return str(p)
+
+
+@pytest.fixture
+def corrupted_pdf(tmp_path):
+    p = tmp_path / 'bad.pdf'
+    p.write_bytes(b'\x00\x01\x02\x03')
+    return str(p)
