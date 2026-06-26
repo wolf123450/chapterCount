@@ -4,7 +4,6 @@ Manages the two custom columns and applies the overwrite policy.
 Column lookup names are read from config so users can rename them.
 Calibre DB is passed in (not imported) to keep this module testable via DI.
 """
-import re
 
 
 _COLUMN_DEFS = {
@@ -31,7 +30,7 @@ def ensure_columns(db, prefs: dict) -> None:
     """Create missing custom columns. Call on plugin init and before every write."""
     existing = {col['label'] for col in db.custom_column_list()}
     for key, defn in _COLUMN_DEFS.items():
-        label = _bare_label(prefs[defn['label_key']])
+        label = _bare_label(prefs.get(defn['label_key'], f"#{defn['name'].lower().replace(' ', '_')}"))
         if label not in existing:
             db.create_custom_column(
                 label=label,
