@@ -74,8 +74,8 @@ def write_result(db, book_id: int, result, prefs: dict) -> None:
     count_label  = _bare_label(prefs.get('count_column',  '#chapter_count'))
     method_label = _bare_label(prefs.get('method_column', '#chapter_detection_method'))
 
-    db.set_custom(book_id, result.count,         label=count_label,  index_is_id=True)
-    db.set_custom(book_id, result.column_value(), label=method_label, index_is_id=True)
+    db.set_custom(book_id, result.count,         label=count_label)
+    db.set_custom(book_id, result.column_value(), label=method_label)
 
 
 def _bare_label(col_name: str) -> str:
