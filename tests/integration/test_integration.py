@@ -24,8 +24,11 @@ def _fixture(name):
         yield local
         return
 
-    # Inside Calibre's ZIP plugin: extract to a named tempfile
+    # Inside Calibre's ZIP: pkgutil.get_data() returns None when the loader
+    # doesn't implement get_data(); fall back to Calibre's get_resources()
     data = pkgutil.get_data(_PKG, f'fixtures/{name}')
+    if data is None:
+        data = get_resources(f'tests/integration/fixtures/{name}')
     suffix = os.path.splitext(name)[1]
     fd, path = tempfile.mkstemp(suffix=suffix)
     try:

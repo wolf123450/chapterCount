@@ -90,7 +90,7 @@ class ChapterCountAction(InterfaceAction):
         from calibre_plugins.chapter_count.batch_processor import preferred_format
         preferred = preferred_format(list(fmts))
         book_path = db.format_abspath(book_id, preferred, index_is_id=True)
-        data_dir  = os.path.join(db.library_path, db.field_for('path', book_id) or '')
+        data_dir  = db.abspath(book_id, index_is_id=True) or ''
         per_book  = load_per_book_config(data_dir) if data_dir else {}
         merged    = merge_config(per_book, prefs)
         result    = get_result_for_book(book_path, preferred.lower(), merged)
@@ -112,11 +112,11 @@ class ChapterCountAction(InterfaceAction):
             return
         book_id = self.gui.library_view.model().id(rows[0])
         db      = self.gui.current_db
-        title   = db.field_for('title', book_id) or ''
+        title   = db.title(book_id, index_is_id=True) or ''
         fmts    = db.formats(book_id, index_is_id=True) or []
         from calibre_plugins.chapter_count.batch_processor import preferred_format
         fmt      = preferred_format(list(fmts)) if fmts else ''
-        data_dir = os.path.join(db.library_path, db.field_for('path', book_id) or '')
+        data_dir = db.abspath(book_id, index_is_id=True) or ''
         prefs    = dict(PREFS)
         count_label  = prefs.get('count_column',  '#chapter_count').lstrip('#')
         method_label = prefs.get('method_column', '#chapter_detection_method').lstrip('#')

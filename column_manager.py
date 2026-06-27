@@ -28,7 +28,8 @@ _COLUMN_DEFS = {
 
 def ensure_columns(db, prefs: dict) -> None:
     """Create missing custom columns. Call on plugin init and before every write."""
-    existing = {col['label'] for col in db.custom_column_list()}
+    fm = db.new_api.field_metadata
+    existing = {f['label'] for f in fm.values() if f.get('is_custom')}
     for key, defn in _COLUMN_DEFS.items():
         label = _bare_label(prefs.get(defn['label_key'], f"#{defn['name'].lower().replace(' ', '_')}"))
         if label not in existing:

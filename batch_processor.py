@@ -41,7 +41,7 @@ class BatchProcessor(QThread):
                 break
 
             try:
-                title = self._db.field_for('title', book_id) or f'Book {book_id}'
+                title = self._db.title(book_id, index_is_id=True) or f'Book {book_id}'
                 self.progress.emit(idx + 1, total, title)
 
                 result = self._detect_one(book_id)
@@ -71,12 +71,12 @@ class BatchProcessor(QThread):
 
         fmts = self._db.formats(book_id, index_is_id=True)
         if not fmts:
-            from detectors.base import UNDETECTED
+            from calibre_plugins.chapter_count.detectors.base import UNDETECTED
             return UNDETECTED
 
         preferred = preferred_format(fmts)
         book_path = self._db.format_abspath(book_id, preferred, index_is_id=True)
-        data_dir  = os.path.join(self._db.library_path, self._db.field_for('path', book_id) or '')
+        data_dir  = self._db.abspath(book_id, index_is_id=True) or ''
 
         per_book = self._per_book_loader(data_dir) if data_dir else {}
         merged   = merge_config(per_book, dict(self._prefs))
