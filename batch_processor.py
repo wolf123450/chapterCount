@@ -10,8 +10,12 @@ except ImportError:
 
 import os
 import time
+import traceback
+
+from calibre.utils.logging import default_log
 
 from calibre_plugins.chapter_count.detectors.factory import get_result_for_book
+from calibre_plugins.chapter_count.detectors.base import UNDETECTED
 from calibre_plugins.chapter_count.column_manager import should_write, write_result
 
 
@@ -58,7 +62,11 @@ class BatchProcessor(QThread):
                 self.book_done.emit(book_id, result)
 
             except Exception:
+                default_log.error(
+                    f'Chapter Count: failed on book {book_id}:\n{traceback.format_exc()}'
+                )
                 summary['failed'] += 1
+                self.book_done.emit(book_id, UNDETECTED)
 
             # Yield between batches so Calibre UI stays responsive
             if (idx + 1) % batch_sz == 0:
@@ -71,7 +79,6 @@ class BatchProcessor(QThread):
 
         fmts = self._db.formats(book_id, index_is_id=True)
         if not fmts:
-            from calibre_plugins.chapter_count.detectors.base import UNDETECTED
             return UNDETECTED
 
         preferred = preferred_format(fmts)
