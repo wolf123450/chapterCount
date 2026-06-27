@@ -33,14 +33,19 @@ def ensure_columns(db, prefs: dict) -> None:
     for key, defn in _COLUMN_DEFS.items():
         label = _bare_label(prefs.get(defn['label_key'], f"#{defn['name'].lower().replace(' ', '_')}"))
         if label not in existing:
-            db.create_custom_column(
-                label=label,
-                name=defn['name'],
-                datatype=defn['datatype'],
-                is_multiple=defn['is_multiple'],
-                editable=defn['editable'],
-                display=defn['display'],
-            )
+            try:
+                db.create_custom_column(
+                    label=label,
+                    name=defn['name'],
+                    datatype=defn['datatype'],
+                    is_multiple=defn['is_multiple'],
+                    editable=defn['editable'],
+                    display=defn['display'],
+                )
+            except Exception as exc:
+                # UNIQUE constraint = column already exists (field_metadata cache is stale)
+                if 'UNIQUE' not in str(exc):
+                    raise
 
 
 def should_write(db, book_id: int, new_result, prefs: dict) -> bool:
@@ -66,8 +71,6 @@ def should_write(db, book_id: int, new_result, prefs: dict) -> bool:
 
 def write_result(db, book_id: int, result, prefs: dict) -> None:
     """Write DetectionResult to both custom columns."""
-    ensure_columns(db, prefs)
-
     count_label  = _bare_label(prefs.get('count_column',  '#chapter_count'))
     method_label = _bare_label(prefs.get('method_column', '#chapter_detection_method'))
 
