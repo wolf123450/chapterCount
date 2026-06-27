@@ -78,17 +78,25 @@ class BatchProcessor(QThread):
         from calibre_plugins.chapter_count.config import load_per_book_config, merge_config
 
         fmts = self._db.formats(book_id, index_is_id=True)
+        default_log.error(f'Chapter Count [diag] book {book_id}: fmts={fmts!r}')
         if not fmts:
             return UNDETECTED
 
         preferred = preferred_format(fmts)
         book_path = self._db.format_abspath(book_id, preferred, index_is_id=True)
-        data_dir  = self._db.abspath(book_id, index_is_id=True) or ''
+        default_log.error(
+            f'Chapter Count [diag] book {book_id}: preferred={preferred!r} path={book_path!r}'
+        )
+        data_dir = self._db.abspath(book_id, index_is_id=True) or ''
 
         per_book = self._per_book_loader(data_dir) if data_dir else {}
         merged   = merge_config(per_book, dict(self._prefs))
 
-        return get_result_for_book(book_path, preferred.lower(), merged)
+        result = get_result_for_book(book_path, preferred.lower(), merged)
+        default_log.error(
+            f'Chapter Count [diag] book {book_id}: result={result.count} method={result.method}'
+        )
+        return result
 
 
 _FORMAT_PRIORITY = ['epub', 'azw3', 'mobi', 'azw', 'pdf']
