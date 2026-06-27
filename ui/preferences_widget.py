@@ -11,7 +11,7 @@ except ImportError:
         QPushButton, Qt,
     )
 
-from config import PREFS, DEFAULTS
+from calibre_plugins.chapter_count.config import PREFS, DEFAULTS
 
 
 class PreferencesWidget(QWidget):

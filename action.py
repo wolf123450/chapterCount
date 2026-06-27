@@ -3,9 +3,9 @@ import os
 from calibre.gui2.actions import InterfaceAction
 from calibre.gui2 import error_dialog, info_dialog
 
-from config import PREFS, DEFAULTS, load_per_book_config, merge_config
-from column_manager import ensure_columns, should_write, write_result
-from detectors.factory import get_result_for_book
+from calibre_plugins.chapter_count.config import PREFS, DEFAULTS, load_per_book_config, merge_config
+from calibre_plugins.chapter_count.column_manager import ensure_columns, should_write, write_result
+from calibre_plugins.chapter_count.detectors.factory import get_result_for_book
 
 
 class ChapterCountAction(InterfaceAction):
@@ -87,7 +87,7 @@ class ChapterCountAction(InterfaceAction):
         fmts = db.formats(book_id, index_is_id=True)
         if not fmts:
             return
-        from batch_processor import preferred_format
+        from calibre_plugins.chapter_count.batch_processor import preferred_format
         preferred = preferred_format(list(fmts))
         book_path = db.format_abspath(book_id, preferred, index_is_id=True)
         data_dir  = os.path.join(db.library_path, db.field_for('path', book_id) or '')
@@ -114,7 +114,7 @@ class ChapterCountAction(InterfaceAction):
         db      = self.gui.current_db
         title   = db.field_for('title', book_id) or ''
         fmts    = db.formats(book_id, index_is_id=True) or []
-        from batch_processor import preferred_format
+        from calibre_plugins.chapter_count.batch_processor import preferred_format
         fmt      = preferred_format(list(fmts)) if fmts else ''
         data_dir = os.path.join(db.library_path, db.field_for('path', book_id) or '')
         prefs    = dict(PREFS)
@@ -123,7 +123,7 @@ class ChapterCountAction(InterfaceAction):
         current_count  = db.get_custom(book_id, label=count_label,  index_is_id=True)
         current_method = db.get_custom(book_id, label=method_label, index_is_id=True)
 
-        from ui.book_config_dialog import BookConfigDialog
+        from calibre_plugins.chapter_count.ui.book_config_dialog import BookConfigDialog
         dlg = BookConfigDialog(
             book_id=book_id, title=title, fmt=fmt,
             book_data_dir=data_dir,
@@ -133,7 +133,7 @@ class ChapterCountAction(InterfaceAction):
         dlg.exec_()
 
     def bulk_scan_triggered(self):
-        from ui.batch_progress_dialog import BookSelectorDialog, BatchProgressDialog
+        from calibre_plugins.chapter_count.ui.batch_progress_dialog import BookSelectorDialog, BatchProgressDialog
         db       = self.gui.current_db
         selected = [
             self.gui.library_view.model().id(r)
@@ -154,7 +154,7 @@ class ChapterCountAction(InterfaceAction):
         self.gui.library_view.model().refresh()
 
     def _resolve_scope(self, scope: str, selected_ids: list, db) -> list:
-        from ui.batch_progress_dialog import BookSelectorDialog as BS
+        from calibre_plugins.chapter_count.ui.batch_progress_dialog import BookSelectorDialog as BS
         prefs        = dict(PREFS)
         method_label = prefs.get('method_column', '#chapter_detection_method').lstrip('#')
         count_label  = prefs.get('count_column',  '#chapter_count').lstrip('#')
@@ -171,8 +171,11 @@ class ChapterCountAction(InterfaceAction):
                     if 'undetected' in str(db.get_custom(bid, label=method_label, index_is_id=True) or '')]
         return []
 
+    def apply_settings(self):
+        pass  # JSONConfig reflects disk changes immediately; no cached state to refresh
+
     def _launch_batch(self, book_ids):
-        from ui.batch_progress_dialog import BatchProgressDialog
+        from calibre_plugins.chapter_count.ui.batch_progress_dialog import BatchProgressDialog
         db = self.gui.current_db
         ensure_columns(db, dict(PREFS))
         dlg = BatchProgressDialog(db=db, book_ids=book_ids, prefs=dict(PREFS), parent=self.gui)

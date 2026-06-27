@@ -11,8 +11,8 @@ except ImportError:
         QDialogButtonBox, Qt,
     )
 
-from batch_processor import BatchProcessor
-from config import load_per_book_config
+from calibre_plugins.chapter_count.batch_processor import BatchProcessor
+from calibre_plugins.chapter_count.config import load_per_book_config
 
 
 # ─────────────────────────────────────────── Book Selector Dialog

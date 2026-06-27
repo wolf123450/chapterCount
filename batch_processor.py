@@ -11,8 +11,8 @@ except ImportError:
 import os
 import time
 
-from detectors.factory import get_result_for_book
-from column_manager import should_write, write_result
+from calibre_plugins.chapter_count.detectors.factory import get_result_for_book
+from calibre_plugins.chapter_count.column_manager import should_write, write_result
 
 
 class BatchProcessor(QThread):
@@ -67,7 +67,7 @@ class BatchProcessor(QThread):
         self.finished_.emit(summary)
 
     def _detect_one(self, book_id: int):
-        from config import load_per_book_config, merge_config
+        from calibre_plugins.chapter_count.config import load_per_book_config, merge_config
 
         fmts = self._db.formats(book_id, index_is_id=True)
         if not fmts:

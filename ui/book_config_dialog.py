@@ -11,7 +11,7 @@ except ImportError:
         QDialogButtonBox, QButtonGroup, Qt, QLineEdit,
     )
 
-from config import load_per_book_config, save_per_book_config
+from calibre_plugins.chapter_count.config import load_per_book_config, save_per_book_config
 
 _FORCE_OPTIONS = ['', 'toc', 'structural', 'heuristic']
 _FORCE_LABELS  = ['(auto)', 'TOC', 'Structural', 'Heuristic']

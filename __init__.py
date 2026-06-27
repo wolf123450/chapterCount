@@ -23,3 +23,6 @@ class ChapterCountPlugin(InterfaceActionBase):
 
     def save_settings(self, config_widget):
         config_widget.save_settings()
+        ac = self.actual_plugin_
+        if ac is not None:
+            ac.apply_settings()
