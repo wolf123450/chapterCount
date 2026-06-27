@@ -88,7 +88,7 @@ class ChapterCountAction(InterfaceAction):
         if not fmts:
             return
         from calibre_plugins.chapter_count.batch_processor import preferred_format
-        preferred = preferred_format(list(fmts))
+        preferred = preferred_format(fmts)
         book_path = db.format_abspath(book_id, preferred, index_is_id=True)
         data_dir  = db.abspath(book_id, index_is_id=True) or ''
         per_book  = load_per_book_config(data_dir) if data_dir else {}
