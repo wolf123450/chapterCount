@@ -17,6 +17,7 @@ OUTPUT     = os.path.join(DIST_DIR, 'chapter_count.zip')
 
 # Files/dirs to include (relative to PLUGIN_DIR)
 INCLUDE = [
+    'plugin-import-name-chapter_count.txt',
     '__init__.py',
     'action.py',
     'config.py',
