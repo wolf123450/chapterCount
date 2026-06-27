@@ -2,14 +2,41 @@
 Integration tests that run inside Calibre.
 Each test is a generator that yields (name, passed, detail) tuples.
 run_all() collects all results.
+
+Fixture files live inside the plugin ZIP, not on the real filesystem.
+_fixture() extracts them to a tempfile so detectors can open them normally.
 """
+import contextlib
 import os
+import pkgutil
+import tempfile
 import traceback
 
-_FIXTURES = os.path.join(os.path.dirname(__file__), 'fixtures')
-_EPUB     = os.path.join(_FIXTURES, 'fixture.epub')
-_MOBI     = os.path.join(_FIXTURES, 'fixture.mobi')
-_PDF      = os.path.join(_FIXTURES, 'fixture.pdf')
+_PKG = 'calibre_plugins.chapter_count.tests.integration'
+
+
+@contextlib.contextmanager
+def _fixture(name):
+    """Yield a real filesystem path to a bundled fixture file."""
+    # During development the fixtures directory exists on disk
+    local = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fixtures', name)
+    if os.path.exists(local):
+        yield local
+        return
+
+    # Inside Calibre's ZIP plugin: extract to a named tempfile
+    data = pkgutil.get_data(_PKG, f'fixtures/{name}')
+    suffix = os.path.splitext(name)[1]
+    fd, path = tempfile.mkstemp(suffix=suffix)
+    try:
+        os.write(fd, data)
+        os.close(fd)
+        yield path
+    finally:
+        try:
+            os.unlink(path)
+        except OSError:
+            pass
 
 
 def run_all():
@@ -24,20 +51,22 @@ def run_all():
         try:
             for name, passed, detail in test_fn():
                 yield name, passed, detail
-        except Exception as exc:
+        except Exception:
             yield test_fn.__name__, False, traceback.format_exc(limit=3)
 
 
 def _test_epub_detector():
     from calibre_plugins.chapter_count.detectors.epub_detector import EpubDetector
-    result = EpubDetector().detect(_EPUB, {})
+    with _fixture('fixture.epub') as path:
+        result = EpubDetector().detect(path, {})
     yield 'EPUB detector: fixture.epub', result.count == 3 and result.method == 'toc', \
           f'count={result.count} method={result.method}'
 
 
 def _test_mobi_detector():
     from calibre_plugins.chapter_count.detectors.mobi_detector import MobiDetector
-    result = MobiDetector().detect(_MOBI, {'mobi_use_toc': True})
+    with _fixture('fixture.mobi') as path:
+        result = MobiDetector().detect(path, {'mobi_use_toc': True})
     yield 'MOBI detector: fixture.mobi', result.count == 3 and result.method == 'toc', \
           f'count={result.count} method={result.method}'
 
@@ -48,7 +77,8 @@ def _test_pdf_adapter_import():
             get_pdf_bookmarks, extract_pdf_text
         )
         yield 'PDF adapter: import', True, 'ok'
-        bookmarks = get_pdf_bookmarks(_PDF)
+        with _fixture('fixture.pdf') as path:
+            bookmarks = get_pdf_bookmarks(path)
         yield 'PDF adapter: get_pdf_bookmarks on fixture', isinstance(bookmarks, list), \
               f'returned {bookmarks!r}'
     except Exception as exc:
@@ -56,7 +86,7 @@ def _test_pdf_adapter_import():
 
 
 def _test_config_roundtrip():
-    import tempfile, os
+    import tempfile
     from calibre_plugins.chapter_count.config import load_per_book_config, save_per_book_config
 
     with tempfile.TemporaryDirectory() as tmp:
@@ -68,10 +98,12 @@ def _test_config_roundtrip():
 
 def _test_factory_dispatch():
     from calibre_plugins.chapter_count.detectors.factory import get_result_for_book
-    result = get_result_for_book(_EPUB, 'epub', {})
+    with _fixture('fixture.epub') as path:
+        result = get_result_for_book(path, 'epub', {})
     yield 'Factory: dispatches epub to EpubDetector', result.method == 'toc', \
           f'method={result.method} count={result.count}'
 
-    result2 = get_result_for_book(_EPUB, 'cbz', {})
+    with _fixture('fixture.epub') as path:
+        result2 = get_result_for_book(path, 'cbz', {})
     yield 'Factory: unknown format → undetected', result2.method == 'undetected', \
           f'method={result2.method}'
